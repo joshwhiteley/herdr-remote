@@ -495,7 +495,8 @@ async def handle_client(ws):
                     continue
                 lines = msg.get("lines", "30")
                 remote = pane_remote_map.get(pane_id)
-                content = run_herdr("pane", "read", pane_id, "--lines", str(lines), "--source", "recent", remote=remote)
+                raw = run_herdr("pane", "read", pane_id, "--lines", str(lines), "--source", "recent-unwrapped", remote=remote)
+                content = "\n".join(_reflow([l.rstrip() for l in raw.splitlines()]))
                 await ws.send(json.dumps({"type": "pane_content", "pane_id": pane_id, "content": content}))
             elif msg_type == "send_keys":
                 pane_id = msg["pane_id"]
