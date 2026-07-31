@@ -197,10 +197,38 @@ def get_all_agents():
     return agents
 
 
+REFLOW_MARGIN = 28  # widest word the TUI could have pushed to the next row
+
+
+def _reflow(lines):
+    """Merge lines hard-wrapped by the TUI at pane width into logical lines.
+
+    A line is treated as a continuation when the previous line ran close to
+    the pane's full width (it only broke because the TUI ran out of columns),
+    isn't a decoration/header, and the next line starts like flowing text.
+    """
+    width = max((len(l) for l in lines), default=0)
+    out = []
+    for l in lines:
+        prev = out[-1] if out else ""
+        cont = l.lstrip()
+        if (
+            prev
+            and cont
+            and len(prev) >= width - REFLOW_MARGIN
+            and not any(c in prev[-3:] for c in "─│┘┐]")
+            and (cont[:1].islower() or cont[:1] in "@~/([")
+        ):
+            out[-1] = prev + " " + cont
+        else:
+            out.append(l)
+    return out
+
+
 def read_pane(pane_id, remote=None):
     raw = run_herdr("pane", "read", pane_id, "--lines", "50", "--source", "recent-unwrapped", remote=remote)
     lines = [l.rstrip() for l in raw.splitlines() if l.strip() and not CHROME_RE.search(l)]
-    return "\n".join(lines[-20:])
+    return "\n".join(_reflow(lines)[-20:])
 
 
 def detect_options(text):
