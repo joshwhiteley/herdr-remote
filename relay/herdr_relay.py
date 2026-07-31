@@ -198,8 +198,8 @@ def get_all_agents():
 
 
 def read_pane(pane_id, remote=None):
-    raw = run_herdr("pane", "read", pane_id, "--lines", "50", "--source", "recent", remote=remote)
-    lines = [l for l in raw.splitlines() if l.strip() and not CHROME_RE.search(l)]
+    raw = run_herdr("pane", "read", pane_id, "--lines", "50", "--source", "recent-unwrapped", remote=remote)
+    lines = [l.rstrip() for l in raw.splitlines() if l.strip() and not CHROME_RE.search(l)]
     return "\n".join(lines[-20:])
 
 
