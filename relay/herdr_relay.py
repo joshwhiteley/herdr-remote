@@ -198,6 +198,7 @@ def get_all_agents():
 
 
 REFLOW_MARGIN = 28  # widest word the TUI could have pushed to the next row
+DIVIDER_RE = re.compile(r"[─━═]{24,}")  # decorative rules drawn at full pane width
 
 
 def _reflow(lines):
@@ -208,6 +209,7 @@ def _reflow(lines):
     isn't a decoration/header, and the next line starts like flowing text.
     """
     width = max((len(l) for l in lines), default=0)
+    lines = [DIVIDER_RE.sub("─" * 23, l) for l in lines]
     out = []
     for l in lines:
         prev = out[-1] if out else ""
